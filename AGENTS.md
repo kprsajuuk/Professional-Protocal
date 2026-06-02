@@ -2,7 +2,7 @@
 
 > 本文件是本仓库面向 AI agent（以及任何协作者）的**唯一入口**。
 > 任何 agent 在开始工作前，都应先读完本文件，再按指引阅读 `Memory/` 下的记忆文档。
-> 最后更新：2026-06-01 ｜ 阶段：地基、架构、技术栈已定（数据模型与业务代码尚未开始）
+> 最后更新：2026-06-02 ｜ 阶段：应用框架层已搭建（数据模型与业务代码尚未开始）
 
 ---
 
@@ -19,6 +19,7 @@
 3. **[`Memory/Philosophy.md`](Memory/Philosophy.md)** — 项目「为什么」：核心理念与底层逻辑，决策时的价值判断依据。
 4. **[`Memory/Conventions.md`](Memory/Conventions.md)** — 项目「怎么记 / 怎么维护」：文档策略与活文档维护约定。
 5. **[`Memory/TechStack.md`](Memory/TechStack.md)** — 项目「用什么做」：前后端技术选型与理由（精确版本以 `package.json` 为准）。
+6. **[`Memory/ProgressLog.md`](Memory/ProgressLog.md)** — 项目「做到哪了」：各阶段推进历史与核心思路（倒序）。
 
 > 原则：**先读懂内核，再动手。** 本项目的所有需求、设计、代码、接口文档，都应是这些记忆文档的延伸，而非脱离它们独立产生。
 
@@ -51,8 +52,9 @@
 | `Memory/Philosophy.md` | 核心理念与底层逻辑（长期关系经营、规模化、风险对冲等）。 |
 | `Memory/Conventions.md` | 项目约定：文档与记录策略（md / 代码 / 接口分工）、活文档维护约定。 |
 | `Memory/TechStack.md` | 技术选型与理由（前端 Vite/React/antd，后端 Fastify/Drizzle/SQLite，接口 REST+OpenAPI）。 |
-| `client/` | 前端服务。承载前端工程（含本目录 `README.md` 说明）。 |
-| `server/` | 后端服务。承载后端工程与数据模型（含本目录 `README.md` 说明）。 |
+| `Memory/ProgressLog.md` | 推进历史：各阶段做了什么、核心思路（倒序）。 |
+| `client/` | 前端服务。应用框架层已搭建（api/路由/布局/主题/鉴权/utils；业务在 `features/`）。 |
+| `server/` | 后端服务。应用框架层已搭建（plugins/modules/db；业务模型待定义）。 |
 | `README.md` | **对外展示**用（留作 GitHub README）。**不是** agent 入口，agent 不应依赖它获取项目内核。 |
 | `Professional-Protocal.code-workspace` | 编辑器工作区配置，无需关注。 |
 
@@ -69,9 +71,11 @@
 - ✅ **地基已立**：项目目的、理念、约定、入口与记忆结构已成文。
 - ✅ **架构已定**：前后端分离（`client/` + `server/`）骨架已建立。
 - ✅ **技术栈已定**：见 [`Memory/TechStack.md`](Memory/TechStack.md)；`client/`、`server/` 已脚手架化。
+- ✅ **应用框架层已搭建**：前端 api/路由/布局/主题/鉴权封装，后端 plugins/modules/统一错误处理/JWT 鉴权骨架。
 - ⏳ **待定义（下一轮迭代）**：
   - 联系人／校友的数据字段与数据模型；
   - 关系跟踪流程、统计指标、提醒机制等功能性需求；
-  - 具体业务接口与页面实现。
+  - 具体业务接口与页面实现；
+  - 真实用户表与完整鉴权（当前仅骨架）。
 
 > 在上述功能性需求被明确并写入记忆层之前，**不应**开始编写业务代码。

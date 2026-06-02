@@ -1,14 +1,15 @@
 import Fastify from "fastify";
-import cors from "@fastify/cors";
-import swagger from "@fastify/swagger";
-import swaggerUi from "@fastify/swagger-ui";
 import {
   serializerCompiler,
   validatorCompiler,
-  jsonSchemaTransform,
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import { healthRoutes } from "./routes/health";
+import errorHandlerPlugin from "./plugins/errorHandler";
+import corsPlugin from "./plugins/cors";
+import jwtPlugin from "./plugins/jwt";
+import swaggerPlugin from "./plugins/swagger";
+import { systemRoutes } from "./modules/system/system.routes";
+import { authRoutes } from "./modules/auth/auth.routes";
 
 export function buildApp() {
   const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
@@ -17,23 +18,15 @@ export function buildApp() {
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
 
-  app.register(cors, { origin: true });
+  // 横切插件（fastify-plugin 包裹，应用全局生效）
+  app.register(errorHandlerPlugin);
+  app.register(corsPlugin);
+  app.register(jwtPlugin);
+  app.register(swaggerPlugin);
 
-  // 由 Zod schema 自动生成 OpenAPI（见 Memory/Conventions.md：接口靠生成）
-  app.register(swagger, {
-    openapi: {
-      info: {
-        title: "Professional-Protocal API",
-        description: "长期人脉关系经营系统 后端 API",
-        version: "0.1.0",
-      },
-    },
-    transform: jsonSchemaTransform,
-  });
-  app.register(swaggerUi, { routePrefix: "/docs" });
-
-  // 业务路由
-  app.register(healthRoutes);
+  // 业务模块（显式注册，按域聚合）
+  app.register(systemRoutes);
+  app.register(authRoutes);
 
   return app;
 }

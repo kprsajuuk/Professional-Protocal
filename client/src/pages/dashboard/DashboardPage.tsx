@@ -1,26 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { Alert, Card, Spin, Tag, Typography } from "antd";
-import dayjs from "dayjs";
-import { api } from "./api/client";
+import { systemService } from "../../api/services/system";
+import { formatDateTime } from "../../utils/format";
 
-interface Health {
-  status: string;
-  timestamp: string;
-}
-
-export default function App() {
+export default function DashboardPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["health"],
-    queryFn: async () => (await api.get<Health>("/health")).data,
+    queryFn: systemService.health,
   });
 
   return (
-    <div style={{ maxWidth: 720, margin: "40px auto", padding: 16 }}>
-      <Typography.Title level={3}>Professional-Protocal</Typography.Title>
-      <Typography.Paragraph type="secondary">
-        长期人脉关系经营系统 · 前端骨架
-      </Typography.Paragraph>
-
+    <div style={{ maxWidth: 720 }}>
+      <Typography.Title level={3}>仪表盘</Typography.Title>
       <Card title="后端连通性 (/api/health)">
         {isLoading && <Spin />}
         {error && (
@@ -35,7 +26,7 @@ export default function App() {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <Tag color="green">{data.status}</Tag>
             <Typography.Text type="secondary">
-              {dayjs(data.timestamp).format("YYYY-MM-DD HH:mm:ss")}
+              {formatDateTime(data.timestamp)}
             </Typography.Text>
           </div>
         )}

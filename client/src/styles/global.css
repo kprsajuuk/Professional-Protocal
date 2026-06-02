@@ -1,0 +1,7 @@
+/* 项目级全局样式。组件级 reset 已由 antd 提供（antd/dist/reset.css）。 */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
