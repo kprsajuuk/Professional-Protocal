@@ -56,7 +56,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 登录（stub 凭据，待接入真实用户表） */
+        /** 登录（查库 + 密码哈希校验） */
         post: {
             parameters: {
                 query?: never;
@@ -84,6 +84,13 @@ export interface paths {
                             user: {
                                 id: string;
                                 username: string;
+                                displayName: string;
+                                email: string | null;
+                                /** @enum {string} */
+                                role: "admin" | "user";
+                                enabled: boolean;
+                                createdAt: string;
+                                updatedAt: string;
                             };
                         };
                     };
@@ -103,7 +110,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 获取当前登录用户（受保护示例） */
+        /** 获取当前登录用户 */
         get: {
             parameters: {
                 query?: never;
@@ -122,6 +129,13 @@ export interface paths {
                         "application/json": {
                             id: string;
                             username: string;
+                            displayName: string;
+                            email: string | null;
+                            /** @enum {string} */
+                            role: "admin" | "user";
+                            enabled: boolean;
+                            createdAt: string;
+                            updatedAt: string;
                         };
                     };
                 };
@@ -129,6 +143,311 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 修改当前用户密码 */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        oldPassword: string;
+                        newPassword: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            ok: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 用户列表（分页 + 用户名搜索） */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                    keyword?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                id: string;
+                                username: string;
+                                displayName: string;
+                                email: string | null;
+                                /** @enum {string} */
+                                role: "admin" | "user";
+                                enabled: boolean;
+                                createdAt: string;
+                                updatedAt: string;
+                            }[];
+                            total: number;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** 创建用户 */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        username: string;
+                        /** @default  */
+                        displayName?: string;
+                        /** Format: email */
+                        email?: string | null;
+                        /**
+                         * @default user
+                         * @enum {string}
+                         */
+                        role?: "admin" | "user";
+                        password: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            username: string;
+                            displayName: string;
+                            email: string | null;
+                            /** @enum {string} */
+                            role: "admin" | "user";
+                            enabled: boolean;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 用户详情 */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            username: string;
+                            displayName: string;
+                            email: string | null;
+                            /** @enum {string} */
+                            role: "admin" | "user";
+                            enabled: boolean;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** 删除用户 */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            ok: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** 更新用户（显示名/邮箱/角色/启用状态） */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        displayName?: string;
+                        /** Format: email */
+                        email?: string | null;
+                        /** @enum {string} */
+                        role?: "admin" | "user";
+                        enabled?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            username: string;
+                            displayName: string;
+                            email: string | null;
+                            /** @enum {string} */
+                            role: "admin" | "user";
+                            enabled: boolean;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/users/{id}/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 重置用户密码 */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        newPassword: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            ok: boolean;
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;

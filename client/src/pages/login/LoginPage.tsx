@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Button, Card, Form, Input, Typography } from "antd";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Button, Card, Divider, Form, Input, Typography } from "antd";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { APP_NAME, ROUTES } from "../../constants";
 
@@ -10,10 +10,21 @@ interface LoginForm {
 }
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [loading, setLoading] = useState(false);
+
+  // 已登录用户访问 /login：直接跳入应用（要换账号需先退出登录）。
+  if (isAuthenticated) {
+    const redirect = params.get("redirect");
+    return (
+      <Navigate
+        to={redirect ? decodeURIComponent(redirect) : ROUTES.dashboard}
+        replace
+      />
+    );
+  }
 
   const onFinish = async (values: LoginForm) => {
     setLoading(true);
@@ -32,9 +43,10 @@ export default function LoginPage() {
 
   return (
     <Card style={{ width: 360 }}>
-      <Typography.Title level={4} style={{ textAlign: "center" }}>
+      <Typography.Title level={4} style={{ textAlign: "center", marginBottom: 8 }}>
         {APP_NAME}
       </Typography.Title>
+      <Divider style={{ marginTop: 0 }} />
       <Form
         layout="vertical"
         onFinish={onFinish}

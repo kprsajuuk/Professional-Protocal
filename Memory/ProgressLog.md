@@ -2,9 +2,38 @@
 
 > 轻量记录项目各阶段「做了什么、核心思路」,为后续迭代提供上下文。
 > 不追求事无巨细(细节看代码与各文档),倒序排列,最新在上。
-> 最后更新:2026-06-02
+> 最后更新:2026-06-03
 
 ---
+
+## 阶段 6:核心人脉关系模型 — lean v1(2026-06-03)
+
+项目进入真正的核心:把"关系的演进"系统化承载。概念主轴见 [`Domain.md`](Domain.md)。
+
+- **架构基石**:双层模型——客观 `Person`(共享、可协作)与账号私有的 `Relationship` + `Interaction`(互动时间线)。这是区别于通讯录的根本。
+- **归属决策**:混合(lean 实现)——人物共享 + 关系/互动私有 + 私人备注承载私有标注;字段级覆盖、去重合并推迟。
+- **关系阶段(漏斗)**:识别→已建联→互动中→信任建立→可引荐,作为跟踪/统计主轴。
+- **后端**:新增 5 张表(persons/work_experiences/education_experiences/relationships/interactions);模块 persons(共享 CRUD + 经历子资源)、relationships(owner 作用域 + 阶段过滤)、interactions(关系下时间线)。
+- **前端**:人物库(共享目录)+ 我的关系(列表 + 关系详情页:人物信息 + 关系面板 + 互动时间线)。
+- **本轮不做**:维护节奏/提醒、价值矩阵、目标公司/ sponsor 情报、统计看板、资料自动导入(见 Domain.md 边界)。
+
+## 阶段 5.1:前端体感精修(2026-06-03)
+
+地基功能就绪后,按用户视角打磨外观/交互(详见新文档 [`DesignGuide.md`](DesignGuide.md))。
+
+- **外观**:侧栏标题两行展示(Professional / Protocal)、菜单加图标且收起仅显图标;顶栏精简为「主题图标 + 头像悬浮菜单(个人信息/退出)」;新增个人信息页(`/profile`,改密入口移至此);登录页标题下加 Divider;弹窗正文加上边距。
+- **登录态 bug 修复**:axios 拦截器不再把"登录接口自身的 401"当作会话过期(避免登错密码误伤其他标签页的会话);已登录访问 `/login` 自动跳入应用。
+- **其他**:密码最小长度 6→4;引入 `@ant-design/icons`。
+- **新增规范**:`Memory/DesignGuide.md`——前端美术/体验规范(与 Conventions 的逻辑约定互补)。
+
+## 阶段 5:用户 / 权限地基(2026-06-03)
+
+第一个真实业务需求,也是后续所有业务的地基:把 stub 登录升级为真实用户系统。概念见 [`AccessControl.md`](AccessControl.md)。
+
+- **决策**:角色仅 admin/user 两类(不做 RBAC/部门);管理员管理所有用户 + 任意用户自助改密;密码用 Node 内置 `scrypt` 哈希(无原生依赖);JWT 仅访问令牌带过期;首启播种 `admin/admin`;启动自动迁移 + 播种,开箱即用。护栏:不能删/停用自己、不能删/降级最后一个管理员。
+- **后端**:新增 `users` 表(`db/schema.ts`,首张业务表)+ 迁移(`drizzle/`);`lib/password`(scrypt)、`db/bootstrap`(迁移+播种)、`db/repositories/users`;auth 改为查库校验 + 停用拦截、`/auth/me` 返回完整资料、新增自助改密 `POST /auth/password`;新增 `modules/users`(管理员专属 CRUD + reset-password);`jwt` 插件加 `authorizeAdmin` 守卫。
+- **前端**:`services/users` + 扩展 `services/auth`(role/改密);`AuthContext` 暴露 `isAdmin`;`RoleRoute` 管理员守卫 + `/users` 路由;`MainLayout` 按角色显示「用户管理」、顶栏显示显示名 + 「修改密码」;`UsersPage`(表格 + 增删改查 + 重置密码)、`UserFormModal`、`ResetPasswordModal`、`ChangePasswordModal`。
+- **验证**:后端 curl 跑通登录/CRUD/改密/停用/401/403/护栏;两端 typecheck/build 通过。
 
 ## 阶段 4:应用框架层(2026-06-02)
 

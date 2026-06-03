@@ -10,4 +10,8 @@ export const STORAGE_KEYS = {
 export const ROUTES = {
   login: "/login",
   dashboard: "/",
+  users: "/users",
+  profile: "/profile",
+  persons: "/persons",
+  relationships: "/relationships",
 } as const;

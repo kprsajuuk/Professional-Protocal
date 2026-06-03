@@ -2,7 +2,7 @@
 
 > 本文件是本仓库面向 AI agent（以及任何协作者）的**唯一入口**。
 > 任何 agent 在开始工作前，都应先读完本文件，再按指引阅读 `Memory/` 下的记忆文档。
-> 最后更新：2026-06-02 ｜ 阶段：应用框架层已搭建（数据模型与业务代码尚未开始）
+> 最后更新：2026-06-03 ｜ 阶段：用户/权限地基已落地，核心人脉关系模型开发中
 
 ---
 
@@ -17,9 +17,12 @@
 1. **本文件 `AGENTS.md`** — 了解项目结构与协作约定。
 2. **[`Memory/Introduction.md`](Memory/Introduction.md)** — 项目「是什么」：定义、背景、目标、边界。
 3. **[`Memory/Philosophy.md`](Memory/Philosophy.md)** — 项目「为什么」：核心理念与底层逻辑，决策时的价值判断依据。
-4. **[`Memory/Conventions.md`](Memory/Conventions.md)** — 项目「怎么记 / 怎么维护」：文档策略与活文档维护约定。
+4. **[`Memory/Conventions.md`](Memory/Conventions.md)** — 项目「怎么记 / 怎么维护」：文档策略、活文档维护与工程约定（逻辑层面）。
+   - 前端外观/体验规范(美术层面)见 **[`Memory/DesignGuide.md`](Memory/DesignGuide.md)**。
 5. **[`Memory/TechStack.md`](Memory/TechStack.md)** — 项目「用什么做」：前后端技术选型与理由（精确版本以 `package.json` 为准）。
-6. **[`Memory/ProgressLog.md`](Memory/ProgressLog.md)** — 项目「做到哪了」：各阶段推进历史与核心思路（倒序）。
+6. **[`Memory/Domain.md`](Memory/Domain.md)** — 项目「核心业务模型」：人脉关系经营的领域概念（双层模型、关系阶段等）。**核心业务的思路主轴。**
+7. **[`Memory/AccessControl.md`](Memory/AccessControl.md)** — 用户/角色/访问控制的概念、规则与护栏（地基功能）。
+8. **[`Memory/ProgressLog.md`](Memory/ProgressLog.md)** — 项目「做到哪了」：各阶段推进历史与核心思路（倒序）。
 
 > 原则：**先读懂内核，再动手。** 本项目的所有需求、设计、代码、接口文档，都应是这些记忆文档的延伸，而非脱离它们独立产生。
 
@@ -50,11 +53,14 @@
 | `Memory/` | 项目「记忆」层。存放无法被代码直接定义的东西：目的、理念、概念定义等。 |
 | `Memory/Introduction.md` | 项目定义、个人背景、外部环境、核心目标与边界。 |
 | `Memory/Philosophy.md` | 核心理念与底层逻辑（长期关系经营、规模化、风险对冲等）。 |
-| `Memory/Conventions.md` | 项目约定：文档与记录策略（md / 代码 / 接口分工）、活文档维护约定。 |
+| `Memory/Conventions.md` | 项目约定（逻辑层）：文档与记录策略、活文档维护、工程约定（REST / hooks 等）。 |
+| `Memory/DesignGuide.md` | 前端外观/体验规范（美术层）：留白、弹窗、侧栏、顶栏等视觉与交互体感约定。 |
 | `Memory/TechStack.md` | 技术选型与理由（前端 Vite/React/antd，后端 Fastify/Drizzle/SQLite，接口 REST+OpenAPI）。 |
+| `Memory/Domain.md` | 核心业务领域模型：双层模型（客观人物/账号私有关系）、关系阶段、互动等概念。 |
+| `Memory/AccessControl.md` | 用户/角色/访问控制的概念、规则与护栏（精确字段见代码）。 |
 | `Memory/ProgressLog.md` | 推进历史：各阶段做了什么、核心思路（倒序）。 |
-| `client/` | 前端服务。应用框架层已搭建（api/路由/布局/主题/鉴权/utils；业务在 `features/`）。 |
-| `server/` | 后端服务。应用框架层已搭建（plugins/modules/db；业务模型待定义）。 |
+| `client/` | 前端服务。应用框架层 + 用户管理 + 核心业务页面（人物库/我的关系）。 |
+| `server/` | 后端服务。应用框架层 + 用户/鉴权 + 业务模块（persons/relationships/interactions）。 |
 | `README.md` | **对外展示**用（留作 GitHub README）。**不是** agent 入口，agent 不应依赖它获取项目内核。 |
 | `Professional-Protocal.code-workspace` | 编辑器工作区配置，无需关注。 |
 
@@ -71,11 +77,9 @@
 - ✅ **地基已立**：项目目的、理念、约定、入口与记忆结构已成文。
 - ✅ **架构已定**：前后端分离（`client/` + `server/`）骨架已建立。
 - ✅ **技术栈已定**：见 [`Memory/TechStack.md`](Memory/TechStack.md)；`client/`、`server/` 已脚手架化。
-- ✅ **应用框架层已搭建**：前端 api/路由/布局/主题/鉴权封装，后端 plugins/modules/统一错误处理/JWT 鉴权骨架。
-- ⏳ **待定义（下一轮迭代）**：
-  - 联系人／校友的数据字段与数据模型；
-  - 关系跟踪流程、统计指标、提醒机制等功能性需求；
-  - 具体业务接口与页面实现；
-  - 真实用户表与完整鉴权（当前仅骨架）。
+- ✅ **应用框架层已搭建**：前端 api/路由/布局/主题/鉴权封装，后端 plugins/modules/统一错误处理/JWT 鉴权。
+- ✅ **用户/权限地基已落地**：真实用户表 + 哈希登录 + 角色（admin/user）+ 用户管理；见 [`Memory/AccessControl.md`](Memory/AccessControl.md)。
+- 🚧 **核心人脉关系模型（进行中）**：双层模型（共享人物 / 账号私有关系 + 互动时间线）；见 [`Memory/Domain.md`](Memory/Domain.md)。
+- ⏳ **待排期（后续迭代）**：维护节奏/提醒、价值×关系矩阵、目标公司与 sponsor 情报、统计看板、资料导入。
 
-> 在上述功能性需求被明确并写入记忆层之前，**不应**开始编写业务代码。
+> 新业务需求应先明确并写入 `Memory/`（尤其 `Domain.md`），再据此设计与编码。

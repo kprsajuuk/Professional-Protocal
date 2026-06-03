@@ -20,4 +20,14 @@ export default fp(async (app) => {
       }
     },
   );
+
+  // 管理员守卫：须在 authenticate 之后调用（request.user 已就绪）。
+  app.decorate(
+    "authorizeAdmin",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      if (request.user?.role !== "admin") {
+        reply.code(403).send({ message: "需要管理员权限" });
+      }
+    },
+  );
 });

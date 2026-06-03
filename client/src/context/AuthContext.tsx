@@ -17,6 +17,7 @@ import {
 export interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   login: (payload: LoginPayload) => Promise<void>;
   logout: () => void;
 }
@@ -55,7 +56,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, isAuthenticated: Boolean(token), login, logout }),
+    () => ({
+      user,
+      isAuthenticated: Boolean(token),
+      isAdmin: user?.role === "admin",
+      login,
+      logout,
+    }),
     [user, token, login, logout],
   );
 

@@ -10,6 +10,10 @@ import jwtPlugin from "./plugins/jwt";
 import swaggerPlugin from "./plugins/swagger";
 import { systemRoutes } from "./modules/system/system.routes";
 import { authRoutes } from "./modules/auth/auth.routes";
+import { usersRoutes } from "./modules/users/users.routes";
+import { personsRoutes } from "./modules/persons/persons.routes";
+import { relationshipsRoutes } from "./modules/relationships/relationships.routes";
+import { interactionsRoutes } from "./modules/interactions/interactions.routes";
 
 export function buildApp() {
   const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
@@ -27,6 +31,10 @@ export function buildApp() {
   // 业务模块（显式注册，按域聚合）
   app.register(systemRoutes);
   app.register(authRoutes);
+  app.register(usersRoutes);
+  app.register(personsRoutes);
+  app.register(relationshipsRoutes);
+  app.register(interactionsRoutes);
 
   return app;
 }

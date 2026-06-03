@@ -32,12 +32,21 @@ http.interceptors.response.use(
     const status = error.response?.status;
     const message = error.response?.data?.message ?? error.message ?? "请求失败";
 
-    if (status === 401) {
+    // 登录接口自身的 401（用户名/密码错误）不应被当作"会话过期"：
+    // 不清除已有会话、不跳转，仅向上抛给登录页处理，避免误伤其他标签页的登录态。
+    const isLoginRequest = (error.config?.url ?? "").includes("/auth/login");
+
+    if (status === 401 && !isLoginRequest) {
       storage.remove(STORAGE_KEYS.token);
       if (window.location.pathname !== ROUTES.login) {
         const current = window.location.pathname + window.location.search;
         window.location.href = `${ROUTES.login}?redirect=${encodeURIComponent(current)}`;
       }
+    } else if (isLoginRequest) {
+      notification.error({
+        message: "登录失败",
+        description: message,
+      });
     } else {
       notification.error({ message: "请求出错", description: message });
     }

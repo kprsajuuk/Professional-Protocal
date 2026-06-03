@@ -6,10 +6,10 @@ export const config = {
     secret: process.env.JWT_SECRET ?? "dev-secret-change-me",
     expiresIn: process.env.JWT_EXPIRES_IN ?? "7d",
   },
-  // 占位登录凭据：真实用户表接入前，仅供开发期 stub 登录使用。
-  auth: {
-    username: process.env.AUTH_USERNAME ?? "admin",
-    password: process.env.AUTH_PASSWORD ?? "admin",
+  // 初始管理员：首次启动且用户表为空时，自动播种这一个内置管理员账号。
+  seedAdmin: {
+    username: process.env.SEED_ADMIN_USERNAME ?? "admin",
+    password: process.env.SEED_ADMIN_PASSWORD ?? "admin",
   },
 };
 
