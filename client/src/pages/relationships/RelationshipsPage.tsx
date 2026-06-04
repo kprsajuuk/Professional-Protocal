@@ -64,13 +64,13 @@ export default function RelationshipsPage() {
       ),
     },
     {
-      title: "信任",
+      title: "信任/亲近",
       dataIndex: "trustLevel",
       key: "trustLevel",
       render: (v: number | null) => (v ? `${v}/5` : "-"),
     },
     {
-      title: "价值",
+      title: "价值认可",
       dataIndex: "valueRating",
       key: "valueRating",
       render: (v: number | null) => (v ? `${v}/5` : "-"),

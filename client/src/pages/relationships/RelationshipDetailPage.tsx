@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Alert,
   App,
   Button,
   Card,
   Col,
   Descriptions,
+  Divider,
   Empty,
   Form,
   Input,
@@ -179,7 +181,7 @@ export default function RelationshipDetailPage() {
       <Row gutter={16}>
         <Col xs={24} lg={14}>
           <Card
-            title="人物资料（共享）"
+            title="人物资料 · 客观事实（共享）"
             style={{ marginBottom: 16 }}
             extra={
               <Button
@@ -227,7 +229,7 @@ export default function RelationshipDetailPage() {
 
         <Col xs={24} lg={10}>
           <Card
-            title="关系（仅自己可见）"
+            title="关系 · 我的记录（仅自己可见）"
             style={{ marginBottom: 16 }}
             extra={
               <Popconfirm
@@ -240,6 +242,9 @@ export default function RelationshipDetailPage() {
             }
           >
             <Form form={form} layout="vertical">
+              <Divider titlePlacement="start" style={{ marginTop: 0 }}>
+                阶段
+              </Divider>
               <Row gutter={12}>
                 <Col span={12}>
                   <Form.Item name="stage" label="阶段">
@@ -260,13 +265,23 @@ export default function RelationshipDetailPage() {
                     />
                   </Form.Item>
                 </Col>
+              </Row>
+
+              <Divider titlePlacement="start">我的评估（主观 · 可留空）</Divider>
+              <Alert
+                type="info"
+                showIcon
+                style={{ marginBottom: 12 }}
+                message="这些是你此刻的主观判断，仅用于分配精力，不代表对方的真实想法。拿不准就留空。"
+              />
+              <Row gutter={12}>
                 <Col span={12}>
-                  <Form.Item name="trustLevel" label="信任度 (1-5)">
+                  <Form.Item name="trustLevel" label="信任 / 亲近（1-5）">
                     <InputNumber min={1} max={5} style={{ width: "100%" }} />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="valueRating" label="价值 (1-5)">
+                  <Form.Item name="valueRating" label="价值认可（1-5）">
                     <InputNumber min={1} max={5} style={{ width: "100%" }} />
                   </Form.Item>
                 </Col>
@@ -279,16 +294,10 @@ export default function RelationshipDetailPage() {
                     />
                   </Form.Item>
                 </Col>
-                <Col span={24}>
-                  <Form.Item name="tags" label="标签">
-                    <Input placeholder="逗号分隔" />
-                  </Form.Item>
-                </Col>
-                <Col span={24}>
-                  <Form.Item name="context" label="相识背景">
-                    <Input.TextArea rows={2} />
-                  </Form.Item>
-                </Col>
+              </Row>
+
+              <Divider titlePlacement="start">理解与备注</Divider>
+              <Row gutter={12}>
                 <Col span={24}>
                   <Form.Item
                     name="understanding"
@@ -298,11 +307,22 @@ export default function RelationshipDetailPage() {
                   </Form.Item>
                 </Col>
                 <Col span={24}>
+                  <Form.Item name="context" label="相识背景">
+                    <Input.TextArea rows={2} />
+                  </Form.Item>
+                </Col>
+                <Col span={24}>
                   <Form.Item name="privateNotes" label="私人备注">
                     <Input.TextArea rows={2} />
                   </Form.Item>
                 </Col>
+                <Col span={24}>
+                  <Form.Item name="tags" label="标签">
+                    <Input placeholder="逗号分隔" />
+                  </Form.Item>
+                </Col>
               </Row>
+
               <Button type="primary" loading={saving} onClick={handleSaveRelationship}>
                 保存关系
               </Button>
@@ -312,7 +332,7 @@ export default function RelationshipDetailPage() {
       </Row>
 
       <Card
-        title="互动时间线"
+        title="互动时间线 · 事实记录"
         extra={
           <Button
             type="primary"
