@@ -41,8 +41,7 @@ export async function personsRoutes(app: FastifyInstance) {
       },
     },
     async (request) => {
-      const { page, pageSize, keyword } = request.query;
-      const { items, total } = await personsRepo.list({ page, pageSize, keyword });
+      const { items, total } = await personsRepo.list(request.query);
       return { items: items.map(toPerson), total };
     },
   );
@@ -79,7 +78,7 @@ export async function personsRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const id = personsRepo.create(request.body, request.user.sub);
+      const id = await personsRepo.create(request.body, request.user.sub);
       const detail = await personsRepo.getDetail(id);
       reply.code(201);
       return detailDto(detail!);
@@ -102,7 +101,7 @@ export async function personsRoutes(app: FastifyInstance) {
     async (request) => {
       const existing = await personsRepo.findById(request.params.id);
       if (!existing) throw new NotFoundError("人物不存在");
-      personsRepo.update(request.params.id, request.body, request.user.sub);
+      await personsRepo.update(request.params.id, request.body, request.user.sub);
       const detail = await personsRepo.getDetail(request.params.id);
       return detailDto(detail!);
     },

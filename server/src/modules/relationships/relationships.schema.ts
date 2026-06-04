@@ -65,6 +65,7 @@ export const personSummarySchema = z.object({
 
 export const relationshipListItemSchema = relationshipSchema.extend({
   person: personSummarySchema,
+  lastContactedAt: z.string().nullable(),
 });
 
 export const relationshipDetailSchema = relationshipSchema.extend({
@@ -108,6 +109,8 @@ export const listRelationshipsQuerySchema = z.object({
   keyword: z.string().trim().optional(),
   stage: stageEnum.optional(),
   status: statusEnum.optional(),
+  sort: z.enum(["updatedAt", "stage", "trust", "lastContact"]).default("updatedAt"),
+  order: z.enum(["asc", "desc"]).default("desc"),
 });
 
 export const relationshipIdParamSchema = z.object({ id: z.string() });

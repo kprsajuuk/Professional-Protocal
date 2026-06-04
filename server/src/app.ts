@@ -11,6 +11,7 @@ import swaggerPlugin from "./plugins/swagger";
 import { systemRoutes } from "./modules/system/system.routes";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { usersRoutes } from "./modules/users/users.routes";
+import { lookupsRoutes } from "./modules/lookups/lookups.routes";
 import { personsRoutes } from "./modules/persons/persons.routes";
 import { relationshipsRoutes } from "./modules/relationships/relationships.routes";
 import { interactionsRoutes } from "./modules/interactions/interactions.routes";
@@ -32,6 +33,7 @@ export function buildApp() {
   app.register(systemRoutes);
   app.register(authRoutes);
   app.register(usersRoutes);
+  app.register(lookupsRoutes);
   app.register(personsRoutes);
   app.register(relationshipsRoutes);
   app.register(interactionsRoutes);

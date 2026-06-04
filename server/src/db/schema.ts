@@ -62,13 +62,30 @@ export const persons = sqliteTable("persons", {
   ...timestamps,
 });
 
-// 客观层：工作经历（属于 person，可多条）。
+// 客观层：规范化的公司 / 学校实体（共享，find-or-create，见 Memory/Domain.md）。
+export const companies = sqliteTable("companies", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  createdBy: text("created_by").references(() => users.id),
+  ...timestamps,
+});
+
+export const schools = sqliteTable("schools", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  createdBy: text("created_by").references(() => users.id),
+  ...timestamps,
+});
+
+// 客观层：工作经历（属于 person，可多条；公司引用 companies 实体）。
 export const workExperiences = sqliteTable("work_experiences", {
   id: text("id").primaryKey(),
   personId: text("person_id")
     .notNull()
     .references(() => persons.id, { onDelete: "cascade" }),
-  company: text("company").notNull(),
+  companyId: text("company_id")
+    .notNull()
+    .references(() => companies.id),
   title: text("title"),
   location: text("location"),
   startDate: text("start_date"),
@@ -78,13 +95,15 @@ export const workExperiences = sqliteTable("work_experiences", {
   ...timestamps,
 });
 
-// 客观层：教育经历（属于 person，可多条）。
+// 客观层：教育经历（属于 person，可多条；学校引用 schools 实体）。
 export const educationExperiences = sqliteTable("education_experiences", {
   id: text("id").primaryKey(),
   personId: text("person_id")
     .notNull()
     .references(() => persons.id, { onDelete: "cascade" }),
-  school: text("school").notNull(),
+  schoolId: text("school_id")
+    .notNull()
+    .references(() => schools.id),
   department: text("department"),
   program: text("program"),
   major: text("major"),
@@ -168,6 +187,8 @@ export const interactions = sqliteTable("interactions", {
 
 export type PersonRow = typeof persons.$inferSelect;
 export type NewPersonRow = typeof persons.$inferInsert;
+export type CompanyRow = typeof companies.$inferSelect;
+export type SchoolRow = typeof schools.$inferSelect;
 export type WorkExperienceRow = typeof workExperiences.$inferSelect;
 export type NewWorkExperienceRow = typeof workExperiences.$inferInsert;
 export type EducationExperienceRow = typeof educationExperiences.$inferSelect;

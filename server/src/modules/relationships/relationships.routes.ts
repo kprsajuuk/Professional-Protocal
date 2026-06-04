@@ -44,19 +44,17 @@ export async function relationshipsRoutes(app: FastifyInstance) {
       },
     },
     async (request) => {
-      const { page, pageSize, keyword, stage, status } = request.query;
       const { items, total } = await relationshipsRepo.list({
         ownerId: request.user.sub,
-        page,
-        pageSize,
-        keyword,
-        stage,
-        status,
+        ...request.query,
       });
       return {
         items: items.map((row) => ({
           ...toRelationship(row.relationship),
           person: row.person,
+          lastContactedAt: row.lastContactedAt
+            ? new Date(row.lastContactedAt * 1000).toISOString()
+            : null,
         })),
         total,
       };
@@ -108,7 +106,7 @@ export async function relationshipsRoutes(app: FastifyInstance) {
 
       let personId = linkId;
       if (person) {
-        personId = personsRepo.create(person, ownerId);
+        personId = await personsRepo.create(person, ownerId);
       } else {
         const exists = await personsRepo.findById(personId!);
         if (!exists) throw new NotFoundError("人物不存在");

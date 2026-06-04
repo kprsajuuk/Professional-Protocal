@@ -6,6 +6,7 @@ export type Gender = "male" | "female" | "other";
 export interface WorkExperience {
   id: string;
   personId: string;
+  companyId: string;
   company: string;
   title: string | null;
   location: string | null;
@@ -18,6 +19,7 @@ export interface WorkExperience {
 export interface EducationExperience {
   id: string;
   personId: string;
+  schoolId: string;
   school: string;
   department: string | null;
   program: string | null;
@@ -51,7 +53,7 @@ export interface PersonDetail extends Person {
 }
 
 export interface WorkExperienceInput {
-  company: string;
+  companyName: string;
   title?: string | null;
   location?: string | null;
   startDate?: string | null;
@@ -61,7 +63,7 @@ export interface WorkExperienceInput {
 }
 
 export interface EducationExperienceInput {
-  school: string;
+  schoolName: string;
   department?: string | null;
   program?: string | null;
   major?: string | null;
@@ -89,6 +91,11 @@ export interface ListPersonsQuery {
   page?: number;
   pageSize?: number;
   keyword?: string;
+  gender?: Gender;
+  schoolId?: string;
+  companyId?: string;
+  sort?: "updatedAt" | "birthYear";
+  order?: "asc" | "desc";
 }
 
 // 人物库(共享客观资料)接口。

@@ -19,6 +19,11 @@ import {
   personsService,
   type PersonPayload,
 } from "../../api/services/persons";
+import {
+  companiesService,
+  schoolsService,
+} from "../../api/services/lookups";
+import { LookupAutoComplete } from "../../components/LookupAutoComplete";
 
 interface PersonFormDrawerProps {
   open: boolean;
@@ -81,7 +86,7 @@ export function PersonFormDrawer({
       handshakeUrl: p.handshakeUrl ?? "",
       otherLinks: p.otherLinks ?? "",
       workExperiences: p.workExperiences.map((w) => ({
-        company: w.company,
+        companyName: w.company,
         title: w.title ?? "",
         location: w.location ?? "",
         startDate: w.startDate ?? "",
@@ -90,7 +95,7 @@ export function PersonFormDrawer({
         description: w.description ?? "",
       })),
       educationExperiences: p.educationExperiences.map((e) => ({
-        school: e.school,
+        schoolName: e.school,
         department: e.department ?? "",
         program: e.program ?? "",
         major: e.major ?? "",
@@ -214,11 +219,14 @@ export function PersonFormDrawer({
                   <Row gutter={12}>
                     <Col span={12}>
                       <Form.Item
-                        name={[field.name, "company"]}
+                        name={[field.name, "companyName"]}
                         label="公司"
                         rules={[{ required: true, message: "请输入公司" }]}
                       >
-                        <Input />
+                        <LookupAutoComplete
+                          search={companiesService.search}
+                          placeholder="搜索或输入公司"
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={12}>
@@ -261,7 +269,7 @@ export function PersonFormDrawer({
                 type="dashed"
                 block
                 icon={<PlusOutlined />}
-                onClick={() => add({ company: "", isCurrent: false })}
+                onClick={() => add({ companyName: "", isCurrent: false })}
               >
                 添加工作经历
               </Button>
@@ -278,11 +286,14 @@ export function PersonFormDrawer({
                   <Row gutter={12}>
                     <Col span={12}>
                       <Form.Item
-                        name={[field.name, "school"]}
+                        name={[field.name, "schoolName"]}
                         label="学校"
                         rules={[{ required: true, message: "请输入学校" }]}
                       >
-                        <Input />
+                        <LookupAutoComplete
+                          search={schoolsService.search}
+                          placeholder="搜索或输入学校"
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={12}>
@@ -330,7 +341,7 @@ export function PersonFormDrawer({
                 type="dashed"
                 block
                 icon={<PlusOutlined />}
-                onClick={() => add({ school: "", isCurrent: false })}
+                onClick={() => add({ schoolName: "", isCurrent: false })}
               >
                 添加教育经历
               </Button>

@@ -5,14 +5,29 @@ import {
   Button,
   Input,
   Popconfirm,
+  Segmented,
+  Select,
   Space,
   Table,
   Typography,
   type TableColumnsType,
 } from "antd";
-import { personsService, type Person } from "../../api/services/persons";
+import {
+  personsService,
+  type Gender,
+  type ListPersonsQuery,
+  type Person,
+} from "../../api/services/persons";
+import {
+  companiesService,
+  schoolsService,
+} from "../../api/services/lookups";
+import { LookupSelect } from "../../components/LookupSelect";
 import { formatDateTime } from "../../utils/format";
 import { PersonFormDrawer } from "./PersonFormDrawer";
+
+type SortField = NonNullable<ListPersonsQuery["sort"]>;
+type Order = NonNullable<ListPersonsQuery["order"]>;
 
 export default function PersonsPage() {
   const { message } = App.useApp();
@@ -21,13 +36,27 @@ export default function PersonsPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [keyword, setKeyword] = useState("");
+  const [gender, setGender] = useState<Gender | undefined>();
+  const [schoolId, setSchoolId] = useState<string | undefined>();
+  const [companyId, setCompanyId] = useState<string | undefined>();
+  const [sort, setSort] = useState<SortField>("updatedAt");
+  const [order, setOrder] = useState<Order>("desc");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const { data, isFetching } = useQuery({
-    queryKey: ["persons", { page, pageSize, keyword }],
+    queryKey: ["persons", { page, pageSize, keyword, gender, schoolId, companyId, sort, order }],
     queryFn: () =>
-      personsService.list({ page, pageSize, keyword: keyword || undefined }),
+      personsService.list({
+        page,
+        pageSize,
+        keyword: keyword || undefined,
+        gender,
+        schoolId,
+        companyId,
+        sort,
+        order,
+      }),
     placeholderData: keepPreviousData,
   });
 
@@ -125,6 +154,61 @@ export default function PersonsPage() {
           </Button>
         </Space>
       </div>
+
+      <Space wrap style={{ marginBottom: 16 }}>
+        <Select<Gender>
+          allowClear
+          placeholder="性别"
+          style={{ width: 110 }}
+          value={gender}
+          onChange={(v) => {
+            setGender(v);
+            setPage(1);
+          }}
+          options={[
+            { value: "male", label: "男" },
+            { value: "female", label: "女" },
+            { value: "other", label: "其他" },
+          ]}
+        />
+        <LookupSelect
+          search={schoolsService.search}
+          placeholder="按学校筛选"
+          style={{ width: 200 }}
+          value={schoolId}
+          onChange={(v) => {
+            setSchoolId(v);
+            setPage(1);
+          }}
+        />
+        <LookupSelect
+          search={companiesService.search}
+          placeholder="按当前公司筛选"
+          style={{ width: 200 }}
+          value={companyId}
+          onChange={(v) => {
+            setCompanyId(v);
+            setPage(1);
+          }}
+        />
+        <Select<SortField>
+          style={{ width: 140 }}
+          value={sort}
+          onChange={(v) => setSort(v)}
+          options={[
+            { value: "updatedAt", label: "按更新时间" },
+            { value: "birthYear", label: "按年龄" },
+          ]}
+        />
+        <Segmented<Order>
+          value={order}
+          onChange={setOrder}
+          options={[
+            { value: "desc", label: "降序" },
+            { value: "asc", label: "升序" },
+          ]}
+        />
+      </Space>
 
       <Table<Person>
         rowKey="id"

@@ -6,6 +6,15 @@
 
 ---
 
+## 阶段 6.2:筛选/排序 + 公司/学校实体(2026-06-04)
+
+围绕"找得到、排得出"补齐核心可用性,并把公司/学校从自由文本升级为规范化实体。概念沉淀见 [`Domain.md`](Domain.md)。
+
+- **决策**:上次联系时间**派生**自互动 `MAX(occurredAt)`(单一事实来源、不加冗余列);公司/学校引入**规范化实体表**(模糊搜索 + find-or-create 去重),公司本轮**扁平**(母子层级/按母公司聚合推迟);"按人物属性筛选关系"待 School 就绪后再加。
+- **后端**:新增 `companies`/`schools` 表 + 重新生成业务迁移(work/edu 改为外键引用);`lookups` repo(search + 大小写不敏感 find-or-create)与搜索路由;persons 支持按性别/学校/当前公司筛选、按更新时间/年龄排序,详情 join 实体名;relationships 支持按阶段(漏斗序)/信任亲近/上次联系排序并返回派生 `lastContactedAt`。
+- **前端**:`LookupAutoComplete`(录入,搜索+新建)、`LookupSelect`(筛选,返回 id);人物表单公司/学校改为搜索录入;人物库加性别/学校/公司筛选 + 排序控件;我的关系加排序控件 + 上次联系列。
+- **验证**:迁移重建;两端 typecheck/lint/build 通过;curl/Node 闭环验证 Google/google·CMU/cmu 去重、公司/性别筛选、年龄排序、关系按上次联系/阶段排序。
+
 ## 阶段 6.1:核心概念校准(2026-06-04 · 仅文档)
 
 围绕「评级」与「可扩展性」两点深化认知,沉淀进 [`Philosophy.md`](Philosophy.md) 与 [`Domain.md`](Domain.md),本轮不动代码。

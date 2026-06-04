@@ -1,17 +1,18 @@
 import { z } from "zod";
+import type { PersonRow } from "../../db/schema";
 import type {
-  EducationExperienceRow,
-  PersonRow,
-  WorkExperienceRow,
-} from "../../db/schema";
+  EducationExperienceJoined,
+  WorkExperienceJoined,
+} from "../../db/repositories/persons";
 
 // ── 对外表示（映射器）──────────────────────────────────────────────
 
-export function toWorkExperience(row: WorkExperienceRow) {
+export function toWorkExperience(row: WorkExperienceJoined) {
   return {
     id: row.id,
     personId: row.personId,
-    company: row.company,
+    companyId: row.companyId,
+    company: row.companyName,
     title: row.title,
     location: row.location,
     startDate: row.startDate,
@@ -21,11 +22,12 @@ export function toWorkExperience(row: WorkExperienceRow) {
   };
 }
 
-export function toEducationExperience(row: EducationExperienceRow) {
+export function toEducationExperience(row: EducationExperienceJoined) {
   return {
     id: row.id,
     personId: row.personId,
-    school: row.school,
+    schoolId: row.schoolId,
+    school: row.schoolName,
     department: row.department,
     program: row.program,
     major: row.major,
@@ -60,6 +62,7 @@ export function toPerson(row: PersonRow) {
 export const workExperienceSchema = z.object({
   id: z.string(),
   personId: z.string(),
+  companyId: z.string(),
   company: z.string(),
   title: z.string().nullable(),
   location: z.string().nullable(),
@@ -72,6 +75,7 @@ export const workExperienceSchema = z.object({
 export const educationExperienceSchema = z.object({
   id: z.string(),
   personId: z.string(),
+  schoolId: z.string(),
   school: z.string(),
   department: z.string().nullable(),
   program: z.string().nullable(),
@@ -114,7 +118,7 @@ export const listPersonsResponseSchema = z.object({
 const optionalText = z.string().trim().max(2000).nullish();
 
 const workExperienceInputSchema = z.object({
-  company: z.string().trim().min(1, "公司不能为空"),
+  companyName: z.string().trim().min(1, "公司不能为空"),
   title: optionalText,
   location: optionalText,
   startDate: optionalText,
@@ -124,7 +128,7 @@ const workExperienceInputSchema = z.object({
 });
 
 const educationExperienceInputSchema = z.object({
-  school: z.string().trim().min(1, "学校不能为空"),
+  schoolName: z.string().trim().min(1, "学校不能为空"),
   department: optionalText,
   program: optionalText,
   major: optionalText,
@@ -159,6 +163,11 @@ export const listPersonsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(10),
   keyword: z.string().trim().optional(),
+  gender: z.enum(["male", "female", "other"]).optional(),
+  schoolId: z.string().optional(),
+  companyId: z.string().optional(),
+  sort: z.enum(["updatedAt", "birthYear"]).default("updatedAt"),
+  order: z.enum(["asc", "desc"]).default("desc"),
 });
 
 export const personIdParamSchema = z.object({ id: z.string() });

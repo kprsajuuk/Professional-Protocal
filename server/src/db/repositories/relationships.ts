@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { and, count, desc, eq, like, or, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, like, or, sql, type SQL } from "drizzle-orm";
 import { db } from "../index";
 import {
+  interactions,
   persons,
   relationships,
   type RelationshipRow,
@@ -16,15 +17,27 @@ export interface ListParams {
   keyword?: string;
   stage?: RelationshipStage;
   status?: "active" | "paused" | "archived";
+  sort: "updatedAt" | "stage" | "trust" | "lastContact";
+  order: "asc" | "desc";
 }
 
 export interface RelationshipListRow {
   relationship: RelationshipRow;
   person: { id: string; fullName: string; headline: string | null };
+  lastContactedAt: number | null;
 }
 
 export const relationshipsRepo = {
-  async list({ ownerId, page, pageSize, keyword, stage, status }: ListParams) {
+  async list({
+    ownerId,
+    page,
+    pageSize,
+    keyword,
+    stage,
+    status,
+    sort,
+    order,
+  }: ListParams) {
     const conds: SQL[] = [eq(relationships.ownerId, ownerId)];
     if (stage) conds.push(eq(relationships.stage, stage));
     if (status) conds.push(eq(relationships.status, status));
@@ -38,6 +51,28 @@ export const relationshipsRepo = {
     }
     const where = and(...conds);
 
+    // 上次联系时间 = 该关系下互动的 MAX(occurredAt)，派生（见 Memory/Domain.md）。
+    const lastContact = db
+      .select({
+        relationshipId: interactions.relationshipId,
+        last: sql<number>`max(${interactions.occurredAt})`.as("last"),
+      })
+      .from(interactions)
+      .groupBy(interactions.relationshipId)
+      .as("lc");
+
+    const lastExpr = sql<number | null>`${lastContact.last}`;
+    const dir = order === "asc" ? asc : desc;
+    const stageOrder = sql`case ${relationships.stage} when 'identified' then 0 when 'connected' then 1 when 'engaged' then 2 when 'trusted' then 3 when 'advocate' then 4 else 99 end`;
+
+    let orderBy: SQL[];
+    if (sort === "stage") orderBy = [dir(stageOrder)];
+    else if (sort === "trust")
+      orderBy = [sql`(${relationships.trustLevel} is null)`, dir(relationships.trustLevel)];
+    else if (sort === "lastContact")
+      orderBy = [sql`(${lastExpr} is null)`, dir(lastExpr)];
+    else orderBy = [dir(relationships.updatedAt)];
+
     const [rows, totalRow] = await Promise.all([
       db
         .select({
@@ -47,11 +82,13 @@ export const relationshipsRepo = {
             fullName: persons.fullName,
             headline: persons.headline,
           },
+          lastContactedAt: lastExpr,
         })
         .from(relationships)
         .innerJoin(persons, eq(relationships.personId, persons.id))
+        .leftJoin(lastContact, eq(relationships.id, lastContact.relationshipId))
         .where(where)
-        .orderBy(desc(relationships.updatedAt))
+        .orderBy(...orderBy)
         .limit(pageSize)
         .offset((page - 1) * pageSize),
       db

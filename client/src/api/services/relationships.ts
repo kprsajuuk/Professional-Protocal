@@ -30,6 +30,7 @@ export interface Relationship {
 
 export interface RelationshipListItem extends Relationship {
   person: { id: string; fullName: string; headline: string | null };
+  lastContactedAt: string | null;
 }
 
 export interface RelationshipDetail extends Relationship {
@@ -58,6 +59,8 @@ export interface ListRelationshipsQuery {
   keyword?: string;
   stage?: RelationshipStage;
   status?: RelationshipStatus;
+  sort?: "updatedAt" | "stage" | "trust" | "lastContact";
+  order?: "asc" | "desc";
 }
 
 // 关系(账号私有)接口。

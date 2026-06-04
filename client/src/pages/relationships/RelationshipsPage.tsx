@@ -5,6 +5,7 @@ import {
   Button,
   Input,
   Segmented,
+  Select,
   Space,
   Table,
   Tag,
@@ -15,6 +16,7 @@ import {
   relationshipsService,
   STAGE_META,
   STAGE_ORDER,
+  type ListRelationshipsQuery,
   type RelationshipListItem,
   type RelationshipStage,
 } from "../../api/services/relationships";
@@ -23,6 +25,8 @@ import { formatDateTime } from "../../utils/format";
 import { CreateRelationshipModal } from "./CreateRelationshipModal";
 
 type StageFilter = RelationshipStage | "all";
+type SortField = NonNullable<ListRelationshipsQuery["sort"]>;
+type Order = NonNullable<ListRelationshipsQuery["order"]>;
 
 export default function RelationshipsPage() {
   const navigate = useNavigate();
@@ -30,16 +34,20 @@ export default function RelationshipsPage() {
   const [pageSize, setPageSize] = useState(10);
   const [keyword, setKeyword] = useState("");
   const [stage, setStage] = useState<StageFilter>("all");
+  const [sort, setSort] = useState<SortField>("updatedAt");
+  const [order, setOrder] = useState<Order>("desc");
   const [createOpen, setCreateOpen] = useState(false);
 
   const { data, isFetching } = useQuery({
-    queryKey: ["relationships", { page, pageSize, keyword, stage }],
+    queryKey: ["relationships", { page, pageSize, keyword, stage, sort, order }],
     queryFn: () =>
       relationshipsService.list({
         page,
         pageSize,
         keyword: keyword || undefined,
         stage: stage === "all" ? undefined : stage,
+        sort,
+        order,
       }),
     placeholderData: keepPreviousData,
   });
@@ -76,10 +84,16 @@ export default function RelationshipsPage() {
       render: (v: number | null) => (v ? `${v}/5` : "-"),
     },
     {
+      title: "上次联系",
+      dataIndex: "lastContactedAt",
+      key: "lastContactedAt",
+      render: (v: string | null) => (v ? formatDateTime(v, "YYYY-MM-DD") : "—"),
+    },
+    {
       title: "更新时间",
       dataIndex: "updatedAt",
       key: "updatedAt",
-      render: (v: string) => formatDateTime(v),
+      render: (v: string) => formatDateTime(v, "YYYY-MM-DD"),
     },
   ];
 
@@ -112,18 +126,49 @@ export default function RelationshipsPage() {
         </Space>
       </div>
 
-      <Segmented<StageFilter>
-        style={{ marginBottom: 16 }}
-        value={stage}
-        onChange={(value) => {
-          setStage(value);
-          setPage(1);
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+          marginBottom: 16,
         }}
-        options={[
-          { value: "all", label: "全部" },
-          ...STAGE_ORDER.map((s) => ({ value: s, label: STAGE_META[s].label })),
-        ]}
-      />
+      >
+        <Segmented<StageFilter>
+          value={stage}
+          onChange={(value) => {
+            setStage(value);
+            setPage(1);
+          }}
+          options={[
+            { value: "all", label: "全部" },
+            ...STAGE_ORDER.map((s) => ({ value: s, label: STAGE_META[s].label })),
+          ]}
+        />
+        <Space>
+          <Select<SortField>
+            style={{ width: 150 }}
+            value={sort}
+            onChange={setSort}
+            options={[
+              { value: "updatedAt", label: "按更新时间" },
+              { value: "stage", label: "按阶段" },
+              { value: "trust", label: "按信任/亲近" },
+              { value: "lastContact", label: "按上次联系" },
+            ]}
+          />
+          <Segmented<Order>
+            value={order}
+            onChange={setOrder}
+            options={[
+              { value: "desc", label: "降序" },
+              { value: "asc", label: "升序" },
+            ]}
+          />
+        </Space>
+      </div>
 
       <Table<RelationshipListItem>
         rowKey="id"
