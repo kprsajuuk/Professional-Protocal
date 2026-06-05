@@ -14,14 +14,15 @@ const migrationsFolder = resolve(process.cwd(), "drizzle");
 export async function bootstrapDatabase(
   log: { info: (msg: string) => void; warn: (msg: string) => void },
 ): Promise<void> {
-  if (existsSync(migrationsFolder)) {
-    migrate(db, { migrationsFolder });
-    log.info("数据库迁移已应用");
-  } else {
-    log.warn(
-      `未找到迁移目录 ${migrationsFolder}，请先运行 npm run db:generate`,
+  if (!existsSync(migrationsFolder)) {
+    // 迁移缺失 = 建不了表，继续下去只会在查询时莫名崩溃。直接中止并给出明确指引。
+    throw new Error(
+      `未找到迁移目录 ${migrationsFolder}。请确认在 server/ 目录下启动；` +
+        `若迁移确实缺失，运行 npm run db:generate 生成。`,
     );
   }
+  migrate(db, { migrationsFolder });
+  log.info("数据库迁移已应用");
 
   if ((await usersRepo.total()) === 0) {
     await usersRepo.create({
