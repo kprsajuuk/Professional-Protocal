@@ -80,6 +80,12 @@ npm run preview    # 本地预览生产构建
 - `npm run typecheck` — 仅类型检查
 - `npm run db:generate` — 改了 `db/schema.ts` 后生成迁移文件（提交进仓库）
 - `npm run db:migrate` — 手动应用迁移（一般无需:`npm run dev`/`npm start` 启动时会自动迁移）
+- `npm run db:export` — 导出当前库为自描述 JSON 到 `server/backups/dump-<时间戳>.json`（数据 + 列描述 + 迁移版本戳；`backups/` 不进库）
+- `npm run db:import [文件] [--apply]` — 默认 dry-run：对比 dump 与当前 schema 打印列差异；省略文件则取 `backups/` 最新一份。加 `--apply` 才真正写入（**会先清空目标表再导回**）。破坏性变更时按 dry-run 打印的骨架，在 `src/db/tools/import.ts` 的 `transforms` 里补少量映射
+
+> 抗重置工作流：改表前 `npm run db:export` 留底 → 改 schema / 重置 / 迁移 → `npm run db:import`（先看 dry-run，必要时补 transform）→ `npm run db:import --apply` 导回。
+>
+> 也可不开终端：以管理员登录后进「系统管理」页点「立即备份」，效果同 `db:export`（同样落在 `server/backups/`，页面会显示备份目录与历史清单）。导回仍走 CLI `db:import`。
 
 ### 前端 `client/`
 - `npm run dev` — 开发服务器

@@ -2,9 +2,37 @@
 
 > 轻量记录项目各阶段「做了什么、核心思路」,为后续迭代提供上下文。
 > 不追求事无巨细(细节看代码与各文档),倒序排列,最新在上。
-> 最后更新:2026-06-04
+> 最后更新:2026-06-18
 
 ---
+
+## 阶段 7:AI 顾问 v1 + 模型对接(2026-06-18)
+
+为系统接入 AI。指导思想与领域概念沉淀见 [`AI.md`](AI.md)(已登记进 AGENTS)。铁律:**AI 只产判断/草稿,绝不自动写事实层**。
+
+- **模型对接**:统一抽象成 OpenAI 兼容 Chat Completions(本地 Ollama/OpenWebUI/OpenAI 等通用),`kind` 字段留多供应商接缝(当前仅 `openai-compatible`)。新表 `ai_providers`(全局,admin 在系统管理页增删改 + 测试连接 + 设默认;apiKey 可空,本地免鉴权;明文存储是已知弱点,见 AI.md)。
+- **我的资料**:`users.personId` 关联一条 Person 承载「我的事实背景」(复用人物/经历模型与编辑表单);新表 `self_profiles` 承载主观的 AI 人设/偏好(定位/能带来什么/在找什么/语气/常驻背景)。人物库与关系目标选择按 `excludeSelf` 过滤掉自己,且不能与自己建关系。
+- **破冰建议(极小可用)**:关系详情页「AI 建议」→ 组装[我的 Person+偏好 / 对方 Person / 关系 / 互动史]调默认端点 → 返回 `{assessment, angle, draftMessage}`(宽松 JSON 解析,失败回退原文)。**结果不落库**;弹窗草稿可编辑可复制,人确认后手动发出、再手动记互动。
+- **后端**:`modules/ai`(OpenAI 兼容客户端 + provider CRUD/test + icebreaker)、`modules/profile`(`/me/profile`、关联我的 Person、`/me/preferences`);新增迁移 `0002`(circular FK 用 `AnySQLiteColumn` 注解破解类型死锁)。
+- **验证**:两端 typecheck/lint;Fastify inject + mock OpenAI 端点跑通 provider 创建/测试/默认、我的资料、excludeSelf(4→3)、自关系被拒(400)、icebreaker 解析正确。
+
+## 阶段 6.4:系统管理页 + 一键备份(2026-06-18)
+
+把阶段 6.3 的导出能力从纯 CLI 接到前端:管理员可在页面一键备份,无需开终端。
+
+- **后端**:抽出可复用核心 `server/src/db/tools/backup.ts`(`createBackup` / `listBackupFiles`),`db:export` CLI 改为薄壳复用它(单一事实来源)。`system` 模块新增管理员守卫接口:`POST /system/backup`(导出并落 `backups/`,返回文件名/路径/各表行数)、`GET /system/backups`(历史清单 + 落盘目录)。
+- **前端**:新增「系统管理」页(`/system`,仅 admin,侧栏 `SettingOutlined`),承载数据备份卡片——「立即备份」按钮 + 历史备份表 + 可复制的备份目录路径。`system` service 加 `createBackup`/`listBackups`。后续系统级功能统一归到此页。
+- **定位**:备份文件不经浏览器下载,直接落后端服务器目录(与 CLI 同一处),页面只负责触发与展示「在哪、有哪些」。
+- **验证**:两端 typecheck/lint 通过;`db:export` 重构后照常工作;Fastify inject 跑通 admin 登录 → 备份(201)→ 清单(200)→ 未授权(401)。
+
+## 阶段 6.3:数据导入导出工具 — 抗重置(2026-06-18)
+
+测试期改表常需重置数据库,为「录入的数据不丢」做一个自描述的导出/导入 CLI。详细用法见 [`../DEV_NOTES.md`](../DEV_NOTES.md)。
+
+- **原则**:导出端稳定通用、**自描述**(数据 + 列描述 + 迁移版本戳);导入端视为「一次性适配器」,每次破坏性变更按需替换——不追求永久通用导入器,只让「换导入器」变便宜。
+- **实现**:`server/src/db/tools/`(走原始 better-sqlite3,值原样进出)。`db:export` → `server/backups/dump-<ts>.json`;`db:import [文件] [--apply]` 默认 dry-run 做列三类 diff(自动映射/新增/旧列丢失)并**自动打印可粘贴的 transforms 骨架**,`--apply` 才在事务里按 FK 顺序清空+写回;预留按表 `transforms` 钩子处理语义转换(如旧 `company` 文本→新 `companyId` 外键)。
+- **验证**:同 schema 全列自动映射;模拟破坏性变更能正确报差异并出骨架;真实「导出→删库→重建→`--apply`→重新登录」闭环通过。
+- **定位**:属于开发工具,运行手册落 `DEV_NOTES`,不进概念层文档。
 
 ## 阶段 6.2:筛选/排序 + 公司/学校实体(2026-06-04)
 

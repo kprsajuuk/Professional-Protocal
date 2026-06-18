@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, count, desc, eq, inArray, like, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, like, ne, or, sql } from "drizzle-orm";
 import { db } from "../index";
 import {
   companies,
@@ -30,6 +30,7 @@ export interface ListParams {
   gender?: "male" | "female" | "other";
   schoolId?: string;
   companyId?: string;
+  excludeId?: string; // 排除某条人物（用于过滤掉「我自己」）
   sort: "updatedAt" | "birthYear";
   order: "asc" | "desc";
 }
@@ -115,10 +116,12 @@ export const personsRepo = {
     gender,
     schoolId,
     companyId,
+    excludeId,
     sort,
     order,
   }: ListParams) {
     const conds = [];
+    if (excludeId) conds.push(ne(persons.id, excludeId));
     if (keyword) {
       conds.push(
         or(

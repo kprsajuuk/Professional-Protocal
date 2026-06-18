@@ -3,6 +3,11 @@ dist/
 *.sqlite
 *.sqlite3
 *.db
+# SQLite 运行期临时文件（WAL/SHM/journal）：无独立同步意义，始终忽略
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite-journal
 .env
 .env.*
 !.env.example
+backups/

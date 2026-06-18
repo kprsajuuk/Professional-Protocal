@@ -15,6 +15,7 @@ import {
   ContactsOutlined,
   DashboardOutlined,
   LogoutOutlined,
+  SettingOutlined,
   TeamOutlined,
   UserOutlined,
 } from "@ant-design/icons";
@@ -38,13 +39,16 @@ export function MainLayout() {
     { key: ROUTES.relationships, icon: <ApartmentOutlined />, label: "我的关系" },
     { key: ROUTES.persons, icon: <ContactsOutlined />, label: "人物库" },
     ...(isAdmin
-      ? [{ key: ROUTES.users, icon: <TeamOutlined />, label: "用户管理" }]
+      ? [
+          { key: ROUTES.users, icon: <TeamOutlined />, label: "用户管理" },
+          { key: ROUTES.system, icon: <SettingOutlined />, label: "系统管理" },
+        ]
       : []),
   ];
 
   // 详情页(如 /relationships/:id)仍高亮其所属主菜单。
   const selectedKey =
-    [ROUTES.relationships, ROUTES.persons, ROUTES.users].find(
+    [ROUTES.relationships, ROUTES.persons, ROUTES.users, ROUTES.system].find(
       (key) => location.pathname.startsWith(key),
     ) ?? ROUTES.dashboard;
 

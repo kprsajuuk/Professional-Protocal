@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { AppError, NotFoundError } from "../../lib/errors";
 import { personsRepo, type PersonDetail } from "../../db/repositories/persons";
+import { usersRepo } from "../../db/repositories/users";
 import {
   createPersonBodySchema,
   listPersonsQuerySchema,
@@ -41,7 +42,13 @@ export async function personsRoutes(app: FastifyInstance) {
       },
     },
     async (request) => {
-      const { items, total } = await personsRepo.list(request.query);
+      const { excludeSelf, ...query } = request.query;
+      let excludeId: string | undefined;
+      if (excludeSelf) {
+        const me = await usersRepo.findById(request.user.sub);
+        excludeId = me?.personId ?? undefined;
+      }
+      const { items, total } = await personsRepo.list({ ...query, excludeId });
       return { items: items.map(toPerson), total };
     },
   );

@@ -3,6 +3,7 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { AppError, NotFoundError } from "../../lib/errors";
 import { relationshipsRepo } from "../../db/repositories/relationships";
 import { personsRepo } from "../../db/repositories/persons";
+import { usersRepo } from "../../db/repositories/users";
 import {
   toEducationExperience,
   toPerson,
@@ -110,6 +111,10 @@ export async function relationshipsRoutes(app: FastifyInstance) {
       } else {
         const exists = await personsRepo.findById(personId!);
         if (!exists) throw new NotFoundError("人物不存在");
+        const me = await usersRepo.findById(ownerId);
+        if (me?.personId && me.personId === personId) {
+          throw new AppError("不能和自己建立关系", 400);
+        }
         if (await relationshipsRepo.findByOwnerAndPerson(ownerId, personId!)) {
           throw new AppError("你已与该人物建立关系", 409);
         }

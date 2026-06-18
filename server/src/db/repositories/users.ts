@@ -52,7 +52,12 @@ export const usersRepo = {
 
   async update(
     id: string,
-    data: Partial<Pick<UserRow, "displayName" | "email" | "role" | "enabled" | "passwordHash">>,
+    data: Partial<
+      Pick<
+        UserRow,
+        "displayName" | "email" | "role" | "enabled" | "passwordHash" | "personId"
+      >
+    >,
   ): Promise<UserRow | undefined> {
     const [row] = await db
       .update(users)

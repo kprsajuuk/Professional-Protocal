@@ -11,6 +11,7 @@ import { ROUTES } from "../constants";
 const LoginPage = lazy(() => import("../pages/login/LoginPage"));
 const DashboardPage = lazy(() => import("../pages/dashboard/DashboardPage"));
 const UsersPage = lazy(() => import("../pages/users/UsersPage"));
+const SystemPage = lazy(() => import("../pages/system/SystemPage"));
 const ProfilePage = lazy(() => import("../pages/profile/ProfilePage"));
 const PersonsPage = lazy(() => import("../pages/persons/PersonsPage"));
 const RelationshipsPage = lazy(
@@ -56,6 +57,7 @@ export const router = createBrowserRouter([
             element: <RoleRoute requireAdmin />,
             children: [
               { path: ROUTES.users, element: withSuspense(UsersPage) },
+              { path: ROUTES.system, element: withSuspense(SystemPage) },
             ],
           },
         ],

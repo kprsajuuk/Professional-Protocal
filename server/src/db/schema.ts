@@ -7,6 +7,7 @@ import {
   sqliteTable,
   text,
   uniqueIndex,
+  type AnySQLiteColumn,
 } from "drizzle-orm/sqlite-core";
 
 const timestamps = {
@@ -30,6 +31,9 @@ export const users = sqliteTable("users", {
   // scrypt 派生结果，格式 `salt:hash`（十六进制），见 lib/password.ts。
   passwordHash: text("password_hash").notNull(),
   enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+  // 「我也是图里的一个节点」：账号关联的 Person（我的事实背景）。见 Memory/AI.md。
+  // 显式 AnySQLiteColumn 返回类型，打破 users<->persons 循环引用的类型推断死锁。
+  personId: text("person_id").references((): AnySQLiteColumn => persons.id),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
@@ -185,8 +189,50 @@ export const interactions = sqliteTable("interactions", {
   ...timestamps,
 });
 
+// ── AI（见 Memory/AI.md）────────────────────────────────────────────────
+
+// 模型端点（全局，admin 管）。统一抽象成 OpenAI 兼容；kind 留多供应商接缝。
+export const aiProviders = sqliteTable("ai_providers", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  kind: text("kind", { enum: ["openai-compatible", "anthropic", "gemini"] })
+    .notNull()
+    .default("openai-compatible"),
+  // OpenAI 兼容基址，如 http://<server>:11434/v1（不含 /chat/completions）。
+  baseUrl: text("base_url").notNull(),
+  // 可空：本地 Ollama 等免鉴权端点留空即可。明文存储（见 Memory/AI.md 安全注记）。
+  apiKey: text("api_key"),
+  model: text("model").notNull(),
+  // 额外调用参数（temperature 等）的 JSON 文本。
+  params: text("params"),
+  enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+  isDefault: integer("is_default", { mode: "boolean" }).notNull().default(false),
+  createdBy: text("created_by").references(() => users.id),
+  ...timestamps,
+});
+
+// 我的 AI 人设/偏好（账号私有，一行/用户）。主观，面向 AI 定调。
+export const selfProfiles = sqliteTable("self_profiles", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
+  selfIntro: text("self_intro"),
+  offer: text("offer"),
+  lookingFor: text("looking_for"),
+  tonePreference: text("tone_preference"),
+  extraContext: text("extra_context"),
+  ...timestamps,
+});
+
 export type PersonRow = typeof persons.$inferSelect;
 export type NewPersonRow = typeof persons.$inferInsert;
+export type AiProviderRow = typeof aiProviders.$inferSelect;
+export type NewAiProviderRow = typeof aiProviders.$inferInsert;
+export type AiProviderKind = AiProviderRow["kind"];
+export type SelfProfileRow = typeof selfProfiles.$inferSelect;
+export type NewSelfProfileRow = typeof selfProfiles.$inferInsert;
 export type CompanyRow = typeof companies.$inferSelect;
 export type SchoolRow = typeof schools.$inferSelect;
 export type WorkExperienceRow = typeof workExperiences.$inferSelect;

@@ -15,6 +15,8 @@ import { lookupsRoutes } from "./modules/lookups/lookups.routes";
 import { personsRoutes } from "./modules/persons/persons.routes";
 import { relationshipsRoutes } from "./modules/relationships/relationships.routes";
 import { interactionsRoutes } from "./modules/interactions/interactions.routes";
+import { aiRoutes } from "./modules/ai/ai.routes";
+import { profileRoutes } from "./modules/profile/profile.routes";
 
 export function buildApp() {
   const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
@@ -37,6 +39,8 @@ export function buildApp() {
   app.register(personsRoutes);
   app.register(relationshipsRoutes);
   app.register(interactionsRoutes);
+  app.register(aiRoutes);
+  app.register(profileRoutes);
 
   return app;
 }

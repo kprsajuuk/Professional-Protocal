@@ -27,6 +27,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
+  RobotOutlined,
 } from "@ant-design/icons";
 import {
   relationshipsService,
@@ -52,6 +53,7 @@ import type {
 import { ROUTES } from "../../constants";
 import { formatDateTime } from "../../utils/format";
 import { InteractionFormModal } from "./InteractionFormModal";
+import { IcebreakerModal } from "./IcebreakerModal";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -84,6 +86,7 @@ export default function RelationshipDetailPage() {
   const [interactionOpen, setInteractionOpen] = useState(false);
   const [editingInteraction, setEditingInteraction] =
     useState<Interaction | null>(null);
+  const [icebreakerOpen, setIcebreakerOpen] = useState(false);
 
   const rel = relQuery.data;
 
@@ -176,6 +179,14 @@ export default function RelationshipDetailPage() {
         <Tag color={STAGE_META[rel.stage].color}>
           {STAGE_META[rel.stage].label}
         </Tag>
+        <Button
+          type="primary"
+          ghost
+          icon={<RobotOutlined />}
+          onClick={() => setIcebreakerOpen(true)}
+        >
+          AI 建议
+        </Button>
       </Space>
 
       <Row gutter={16}>
@@ -372,6 +383,13 @@ export default function RelationshipDetailPage() {
         editing={editingInteraction}
         onClose={() => setInteractionOpen(false)}
         onSaved={refreshInteractions}
+      />
+
+      <IcebreakerModal
+        open={icebreakerOpen}
+        relationshipId={id}
+        personName={person.fullName}
+        onClose={() => setIcebreakerOpen(false)}
       />
     </div>
   );

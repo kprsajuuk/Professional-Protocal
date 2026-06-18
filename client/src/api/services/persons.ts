@@ -94,6 +94,7 @@ export interface ListPersonsQuery {
   gender?: Gender;
   schoolId?: string;
   companyId?: string;
+  excludeSelf?: boolean;
   sort?: "updatedAt" | "birthYear";
   order?: "asc" | "desc";
 }

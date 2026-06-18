@@ -166,6 +166,7 @@ export const listPersonsQuerySchema = z.object({
   gender: z.enum(["male", "female", "other"]).optional(),
   schoolId: z.string().optional(),
   companyId: z.string().optional(),
+  excludeSelf: z.coerce.boolean().default(false),
   sort: z.enum(["updatedAt", "birthYear"]).default("updatedAt"),
   order: z.enum(["asc", "desc"]).default("desc"),
 });

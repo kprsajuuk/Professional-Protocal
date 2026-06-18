@@ -9,7 +9,9 @@
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "db:export": "tsx src/db/tools/export.ts",
+    "db:import": "tsx src/db/tools/import.ts"
   },
   "engines": {
     "node": ">=22"

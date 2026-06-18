@@ -30,6 +30,9 @@ interface PersonFormDrawerProps {
   editingId: string | null;
   onClose: () => void;
   onSaved: () => void;
+  // 覆盖「新建」行为（如把人物关联到当前账号）。仅在无 editingId 时生效。
+  createWith?: (payload: PersonPayload) => Promise<unknown>;
+  title?: string;
 }
 
 type FormValues = PersonPayload;
@@ -54,6 +57,8 @@ export function PersonFormDrawer({
   editingId,
   onClose,
   onSaved,
+  createWith,
+  title,
 }: PersonFormDrawerProps) {
   const { message } = App.useApp();
   const queryClient = useQueryClient();
@@ -120,6 +125,9 @@ export function PersonFormDrawer({
         await personsService.update(editingId, payload);
         queryClient.invalidateQueries({ queryKey: ["person", editingId] });
         message.success("已保存");
+      } else if (createWith) {
+        await createWith(payload);
+        message.success("已创建");
       } else {
         await personsService.create(payload);
         message.success("已创建");
@@ -135,7 +143,7 @@ export function PersonFormDrawer({
 
   return (
     <Drawer
-      title={editingId ? "编辑人物" : "新建人物"}
+      title={title ?? (editingId ? "编辑人物" : "新建人物")}
       width={640}
       open={open}
       onClose={onClose}
