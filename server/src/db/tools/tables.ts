@@ -25,6 +25,7 @@ export const TABLE_ORDER = [
   "interactions",
   "ai_providers",
   "self_profiles",
+  "intake_items",
 ];
 
 export function orderTables(tables: string[]): string[] {

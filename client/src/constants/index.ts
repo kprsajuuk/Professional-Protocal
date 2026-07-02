@@ -14,5 +14,6 @@ export const ROUTES = {
   profile: "/profile",
   persons: "/persons",
   relationships: "/relationships",
+  intake: "/intake",
   system: "/system",
 } as const;

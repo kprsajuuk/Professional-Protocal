@@ -17,6 +17,7 @@ import { relationshipsRoutes } from "./modules/relationships/relationships.route
 import { interactionsRoutes } from "./modules/interactions/interactions.routes";
 import { aiRoutes } from "./modules/ai/ai.routes";
 import { profileRoutes } from "./modules/profile/profile.routes";
+import { intakeRoutes } from "./modules/intake/intake.routes";
 
 export function buildApp() {
   const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
@@ -41,6 +42,7 @@ export function buildApp() {
   app.register(interactionsRoutes);
   app.register(aiRoutes);
   app.register(profileRoutes);
+  app.register(intakeRoutes);
 
   return app;
 }

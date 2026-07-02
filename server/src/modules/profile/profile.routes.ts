@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { AppError, NotFoundError } from "../../lib/errors";
@@ -12,6 +13,7 @@ import {
   toWorkExperience,
 } from "../persons/persons.schema";
 import {
+  intakeTokenResponseSchema,
   myProfileResponseSchema,
   preferencesSchema,
   toPreferences,
@@ -104,6 +106,42 @@ export async function profileRoutes(app: FastifyInstance) {
         extraContext: b.extraContext ?? null,
       });
       return toPreferences(row)!;
+    },
+  );
+
+  // ── 采集令牌（供油猴脚本投递鉴权）见 Memory/DataGovernance.md ─────────────────
+  r.get(
+    "/me/intake-token",
+    {
+      ...auth,
+      schema: {
+        tags: ["profile"],
+        summary: "查看我的采集令牌",
+        security: [{ bearerAuth: [] }],
+        response: { 200: intakeTokenResponseSchema },
+      },
+    },
+    async (request) => {
+      const me = await usersRepo.findById(request.user.sub);
+      return { token: me?.intakeToken ?? null };
+    },
+  );
+
+  r.post(
+    "/me/intake-token/rotate",
+    {
+      ...auth,
+      schema: {
+        tags: ["profile"],
+        summary: "生成/重置我的采集令牌",
+        security: [{ bearerAuth: [] }],
+        response: { 200: intakeTokenResponseSchema },
+      },
+    },
+    async (request) => {
+      const token = randomBytes(24).toString("base64url");
+      await usersRepo.update(request.user.sub, { intakeToken: token });
+      return { token };
     },
   );
 }

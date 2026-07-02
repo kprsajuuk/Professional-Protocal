@@ -8,11 +8,17 @@ import {
   Empty,
   Form,
   Input,
+  Popconfirm,
   Space,
   Tag,
   Typography,
 } from "antd";
-import { EditOutlined, LockOutlined, RobotOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  InboxOutlined,
+  LockOutlined,
+  RobotOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { ChangePasswordModal } from "../../components/ChangePasswordModal";
 import { PersonFormDrawer } from "../persons/PersonFormDrawer";
@@ -33,6 +39,12 @@ export default function ProfilePage() {
     queryKey: ["me", "profile"],
     queryFn: () => profileService.get(),
   });
+
+  const tokenQuery = useQuery({
+    queryKey: ["me", "intakeToken"],
+    queryFn: () => profileService.getIntakeToken(),
+  });
+  const [rotating, setRotating] = useState(false);
 
   useEffect(() => {
     if (profile?.preferences) prefsForm.setFieldsValue(profile.preferences);
@@ -60,7 +72,32 @@ export default function ProfilePage() {
     }
   };
 
+  const handleRotateToken = async () => {
+    setRotating(true);
+    try {
+      await profileService.rotateIntakeToken();
+      await queryClient.invalidateQueries({ queryKey: ["me", "intakeToken"] });
+      message.success("已生成新的采集令牌");
+    } catch {
+      // 拦截器提示
+    } finally {
+      setRotating(false);
+    }
+  };
+
+  const handleCopyToken = async () => {
+    const token = tokenQuery.data?.token;
+    if (!token) return;
+    try {
+      await navigator.clipboard.writeText(token);
+      message.success("已复制");
+    } catch {
+      message.warning("复制失败，请手动选择复制");
+    }
+  };
+
   const person = profile?.person ?? null;
+  const intakeToken = tokenQuery.data?.token ?? null;
 
   return (
     <div style={{ maxWidth: 820 }}>
@@ -189,6 +226,50 @@ export default function ProfilePage() {
             <Input.TextArea rows={2} placeholder="任何想让 AI 始终知道的背景" />
           </Form.Item>
         </Form>
+      </Card>
+
+      {/* 采集令牌：供浏览器采集脚本（油猴）投递鉴权。见 Memory/DataGovernance.md。 */}
+      <Card
+        style={{ marginTop: 16 }}
+        loading={tokenQuery.isFetching}
+        title={
+          <Space>
+            <InboxOutlined />
+            采集令牌
+          </Space>
+        }
+        extra={
+          <Popconfirm
+            title={intakeToken ? "重置会使旧令牌立即失效" : "生成采集令牌"}
+            description={
+              intakeToken
+                ? "已配置该令牌的脚本需要重新填入新令牌。"
+                : undefined
+            }
+            onConfirm={handleRotateToken}
+          >
+            <Button loading={rotating}>{intakeToken ? "重置" : "生成"}</Button>
+          </Popconfirm>
+        }
+      >
+        <Typography.Paragraph type="secondary">
+          浏览器采集脚本用这枚长效令牌向后端投递原文（免登录过期）。把它填进油猴脚本的「配置采集令牌」，脚本安装说明见仓库 <Typography.Text code>capture/</Typography.Text> 目录。请妥善保管，勿泄露。
+        </Typography.Paragraph>
+        {intakeToken ? (
+          <Space.Compact style={{ width: "100%" }}>
+            <Input.Password
+              readOnly
+              value={intakeToken}
+              style={{ fontFamily: "monospace" }}
+            />
+            <Button onClick={handleCopyToken}>复制</Button>
+          </Space.Compact>
+        ) : (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description="还没有生成采集令牌"
+          />
+        )}
       </Card>
 
       <ChangePasswordModal open={pwdOpen} onClose={() => setPwdOpen(false)} />

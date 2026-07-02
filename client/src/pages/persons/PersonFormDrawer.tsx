@@ -30,8 +30,10 @@ interface PersonFormDrawerProps {
   editingId: string | null;
   onClose: () => void;
   onSaved: () => void;
-  // 覆盖「新建」行为（如把人物关联到当前账号）。仅在无 editingId 时生效。
+  // 覆盖「新建」行为（如把人物关联到当前账号、从采集草稿入库）。仅在无 editingId 时生效。
   createWith?: (payload: PersonPayload) => Promise<unknown>;
+  // 新建时的预填值（如 AI 解析出的 Person 草稿）。仅在无 editingId 时生效。
+  initialDraft?: PersonPayload | null;
   title?: string;
 }
 
@@ -58,6 +60,7 @@ export function PersonFormDrawer({
   onClose,
   onSaved,
   createWith,
+  initialDraft,
   title,
 }: PersonFormDrawerProps) {
   const { message } = App.useApp();
@@ -75,7 +78,43 @@ export function PersonFormDrawer({
     if (!open) return;
     if (!editingId) {
       form.resetFields();
-      form.setFieldsValue(emptyValues);
+      // 采集草稿等预填：null 归一为 ""，避免受控 Input 警告。
+      form.setFieldsValue(
+        initialDraft
+          ? {
+              ...emptyValues,
+              ...initialDraft,
+              fullName: initialDraft.fullName ?? "",
+              nationality: initialDraft.nationality ?? "",
+              languages: initialDraft.languages ?? "",
+              headline: initialDraft.headline ?? "",
+              linkedinUrl: initialDraft.linkedinUrl ?? "",
+              handshakeUrl: initialDraft.handshakeUrl ?? "",
+              otherLinks: initialDraft.otherLinks ?? "",
+              workExperiences: (initialDraft.workExperiences ?? []).map((w) => ({
+                companyName: w.companyName,
+                title: w.title ?? "",
+                location: w.location ?? "",
+                startDate: w.startDate ?? "",
+                endDate: w.endDate ?? "",
+                isCurrent: w.isCurrent ?? false,
+                description: w.description ?? "",
+              })),
+              educationExperiences: (initialDraft.educationExperiences ?? []).map(
+                (e) => ({
+                  schoolName: e.schoolName,
+                  department: e.department ?? "",
+                  program: e.program ?? "",
+                  major: e.major ?? "",
+                  startDate: e.startDate ?? "",
+                  endDate: e.endDate ?? "",
+                  isCurrent: e.isCurrent ?? false,
+                  description: e.description ?? "",
+                }),
+              ),
+            }
+          : emptyValues,
+      );
       return;
     }
     const p = detailQuery.data;
@@ -110,7 +149,7 @@ export function PersonFormDrawer({
         description: e.description ?? "",
       })),
     });
-  }, [open, editingId, detailQuery.data, form]);
+  }, [open, editingId, detailQuery.data, form, initialDraft]);
 
   const handleSubmit = async () => {
     const values = await form.validateFields();

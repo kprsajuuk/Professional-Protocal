@@ -34,6 +34,8 @@ export const users = sqliteTable("users", {
   // 「我也是图里的一个节点」：账号关联的 Person（我的事实背景）。见 Memory/AI.md。
   // 显式 AnySQLiteColumn 返回类型，打破 users<->persons 循环引用的类型推断死锁。
   personId: text("person_id").references((): AnySQLiteColumn => persons.id),
+  // 采集脚本投递用的长效令牌（自定义头，免 JWT 过期）。明文存储，见 Memory/DataGovernance.md。
+  intakeToken: text("intake_token"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
@@ -226,6 +228,40 @@ export const selfProfiles = sqliteTable("self_profiles", {
   ...timestamps,
 });
 
+// ── 数据采集（见 Memory/DataGovernance.md）──────────────────────────────────────
+
+// 采集条目：入库前的暂存区（账号私有）。捕获层先存原文，之后 AI 解析成草稿，人审阅后入库。
+// 状态机：pending（仅原文）→ parsed（有草稿）→ imported（已入库，回填 personId）/ discarded。
+export const intakeItems = sqliteTable("intake_items", {
+  id: text("id").primaryKey(),
+  // 采集它的账号（谁采谁审，不共享）。
+  ownerId: text("owner_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  // 来源站点（当前只 linkedin，留扩展位）。
+  source: text("source").notNull().default("linkedin"),
+  sourceUrl: text("source_url"),
+  // 抓回来的原始内容（证据，可重解析）。
+  rawContent: text("raw_content").notNull(),
+  rawFormat: text("raw_format", { enum: ["text", "html"] })
+    .notNull()
+    .default("text"),
+  capturedAt: integer("captured_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  status: text("status", {
+    enum: ["pending", "parsed", "imported", "discarded"],
+  })
+    .notNull()
+    .default("pending"),
+  // AI 解析出的 Person 草稿（对齐 createPersonBody 的 JSON 文本）；不是事实，直到入库。
+  parsedDraft: text("parsed_draft"),
+  parseError: text("parse_error"),
+  // 入库后回填对应人物。
+  personId: text("person_id").references((): AnySQLiteColumn => persons.id),
+  ...timestamps,
+});
+
 export type PersonRow = typeof persons.$inferSelect;
 export type NewPersonRow = typeof persons.$inferInsert;
 export type AiProviderRow = typeof aiProviders.$inferSelect;
@@ -244,3 +280,6 @@ export type NewRelationshipRow = typeof relationships.$inferInsert;
 export type RelationshipStage = RelationshipRow["stage"];
 export type InteractionRow = typeof interactions.$inferSelect;
 export type NewInteractionRow = typeof interactions.$inferInsert;
+export type IntakeItemRow = typeof intakeItems.$inferSelect;
+export type NewIntakeItemRow = typeof intakeItems.$inferInsert;
+export type IntakeStatus = IntakeItemRow["status"];

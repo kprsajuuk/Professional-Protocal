@@ -20,6 +20,7 @@ const RelationshipsPage = lazy(
 const RelationshipDetailPage = lazy(
   () => import("../pages/relationships/RelationshipDetailPage"),
 );
+const IntakeInboxPage = lazy(() => import("../pages/intake/IntakeInboxPage"));
 const NotFoundPage = lazy(() => import("../pages/NotFoundPage"));
 
 function withSuspense(Component: ComponentType) {
@@ -45,6 +46,7 @@ export const router = createBrowserRouter([
           { index: true, element: withSuspense(DashboardPage) },
           { path: ROUTES.profile, element: withSuspense(ProfilePage) },
           { path: ROUTES.persons, element: withSuspense(PersonsPage) },
+          { path: ROUTES.intake, element: withSuspense(IntakeInboxPage) },
           {
             path: ROUTES.relationships,
             element: withSuspense(RelationshipsPage),

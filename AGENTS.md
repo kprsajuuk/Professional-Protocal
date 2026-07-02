@@ -2,7 +2,7 @@
 
 > 本文件是本仓库面向 AI agent（以及任何协作者）的**唯一入口**。
 > 任何 agent 在开始工作前，都应先读完本文件，再按指引阅读 `Memory/` 下的记忆文档。
-> 最后更新：2026-06-18 ｜ 进度详情见 `Memory/ProgressLog.md`（按目录地图）
+> 最后更新：2026-07-02 ｜ 进度详情见 `Memory/ProgressLog.md`（按目录地图）
 
 ---
 
@@ -23,7 +23,8 @@
 6. **[`Memory/Domain.md`](Memory/Domain.md)** — 项目「核心业务模型」：人脉关系经营的领域概念（双层模型、关系阶段等）。**核心业务的思路主轴。**
 7. **[`Memory/AccessControl.md`](Memory/AccessControl.md)** — 用户/角色/访问控制的概念、规则与护栏（地基功能）。
 8. **[`Memory/AI.md`](Memory/AI.md)** — AI 如何参与跟踪流程：角色边界（产判断/草稿、不写事实层）、模型端点与「我的资料」概念。
-9. **[`Memory/ProgressLog.md`](Memory/ProgressLog.md)** — 项目「做到哪了」：各阶段推进历史与核心思路（倒序）。
+9. **[`Memory/DataGovernance.md`](Memory/DataGovernance.md)** — 数据这一维度的原则：来源可追溯、可信、生命周期（进入/维护/留存/退出）、质量与边界（半自动采集是其中一个入口）。
+10. **[`Memory/ProgressLog.md`](Memory/ProgressLog.md)** — 项目「做到哪了」：各阶段推进历史与核心思路（倒序）。
 
 > 原则：**先读懂内核，再动手。** 本项目的所有需求、设计、代码、接口文档，都应是这些记忆文档的延伸，而非脱离它们独立产生。
 
@@ -35,6 +36,7 @@
 
 - **[`client/`](client/)** — 前端服务，承载前端工程。
 - **[`server/`](server/)** — 后端服务，承载后端工程与数据模型。
+- **[`capture/`](capture/)** — 采集脚本（跑在第三方站点页面里的浏览器脚本，如 LinkedIn 油猴脚本）。它不属于 `client/`，是后端的又一个客户端，只经由 REST 契约投递采集到的原文。见 [`Memory/DataGovernance.md`](Memory/DataGovernance.md)。
 
 为什么分离：
 
@@ -43,6 +45,8 @@
 - **便于多任务并行**：可借助 Cursor 多任务，让一个 agent 改前端、另一个 agent 改后端，互不冲突。
 
 真正的前端／后端工程将落在各自目录内；两者通过约定的接口契约交互（契约由代码自动生成，见 [`Memory/Conventions.md`](Memory/Conventions.md)）。技术栈选型待下一轮确定。
+
+> 除前后端外还有一个**客户端类产物** `capture/`（采集脚本，跑在第三方站点页面里）。它不改变"前后端分离"的骨架——只是像 SPA 一样，作为后端的又一个客户端经 REST 契约投递数据。为何独立成目录：它注入进 linkedin.com 那样的外部页面，运行环境/生命周期与自家 SPA 完全不同，无法塞进 `client/`。见 [`Memory/DataGovernance.md`](Memory/DataGovernance.md)。
 
 ---
 
@@ -60,9 +64,11 @@
 | `Memory/Domain.md` | 核心业务领域模型：双层模型（客观人物/账号私有关系）、关系阶段、互动等概念。 |
 | `Memory/AccessControl.md` | 用户/角色/访问控制的概念、规则与护栏（精确字段见代码）。 |
 | `Memory/AI.md` | AI 参与跟踪的角色与边界（产判断/草稿、不写事实层）、模型端点与「我的资料」概念。 |
+| `Memory/DataGovernance.md` | 数据治理维度：来源可追溯与可信、数据生命周期（进入/维护/留存/退出）、质量与边界；半自动采集是「进入」的一种实现。 |
 | `Memory/ProgressLog.md` | 推进历史：各阶段做了什么、核心思路（倒序）。 |
-| `client/` | 前端服务。应用框架层 + 用户管理 + 核心业务页面（人物库/我的关系）。 |
-| `server/` | 后端服务。应用框架层 + 用户/鉴权 + 业务模块（persons/relationships/interactions）。 |
+| `client/` | 前端服务。应用框架层 + 用户管理 + 核心业务页面（人物库/我的关系/导入收件箱）。 |
+| `server/` | 后端服务。应用框架层 + 用户/鉴权 + 业务模块（persons/relationships/interactions/intake）。 |
+| `capture/` | 采集脚本（浏览器端产物，如 LinkedIn 油猴脚本）。抓第三方页面原文投递到后端。非 SPA 的一部分。 |
 | `scripts/` | 脚本收录处。所有快速运行 / 打包 / 部署 / 测试类脚本统一放这里（如 `dev.cmd` / `dev.sh` 一键起前后端）。脚本面向主理人日常使用，实现细节不另作记录。 |
 | `playground.md` | **点子草场**（临时草稿场）：随手记 new idea、来回讨论、想不通就删。**非权威、不进必读顺序、不指导开发**——它是「计划」的前身。详见文件内说明。 |
 | `README.md` | **对外展示**用（留作 GitHub README）。**不是** agent 入口，agent 不应依赖它获取项目内核。 |

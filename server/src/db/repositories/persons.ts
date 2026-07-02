@@ -184,6 +184,29 @@ export const personsRepo = {
     return db.query.persons.findFirst({ where: eq(persons.id, id) });
   },
 
+  // 入库前查重候选：linkedinUrl 精确 或 姓名模糊命中已有人物。见 Memory/DataGovernance.md。
+  async findDuplicateCandidates({
+    linkedinUrl,
+    fullName,
+  }: {
+    linkedinUrl?: string | null;
+    fullName?: string | null;
+  }): Promise<PersonRow[]> {
+    const conds = [];
+    if (linkedinUrl && linkedinUrl.trim()) {
+      conds.push(eq(persons.linkedinUrl, linkedinUrl.trim()));
+    }
+    if (fullName && fullName.trim()) {
+      conds.push(like(persons.fullName, `%${fullName.trim()}%`));
+    }
+    if (conds.length === 0) return [];
+    return db
+      .select()
+      .from(persons)
+      .where(conds.length === 1 ? conds[0] : or(...conds))
+      .limit(10);
+  },
+
   async getDetail(id: string): Promise<PersonDetail | undefined> {
     const person = await db.query.persons.findFirst({
       where: eq(persons.id, id),

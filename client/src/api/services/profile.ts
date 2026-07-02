@@ -17,6 +17,10 @@ export interface MyProfile {
 
 export type UpdatePreferencesPayload = Partial<MyPreferences>;
 
+export interface IntakeTokenResult {
+  token: string | null;
+}
+
 // 我的资料：关联 Person（事实背景）+ AI 人设/偏好（主观）。见 Memory/AI.md。
 export const profileService = {
   get: () => request.get<MyProfile>("/me/profile"),
@@ -25,4 +29,8 @@ export const profileService = {
     request.post<PersonDetail>("/me/profile/person", payload),
   updatePreferences: (payload: UpdatePreferencesPayload) =>
     request.put<MyPreferences>("/me/preferences", payload),
+  // 采集令牌（供油猴脚本投递鉴权）。见 Memory/DataGovernance.md。
+  getIntakeToken: () => request.get<IntakeTokenResult>("/me/intake-token"),
+  rotateIntakeToken: () =>
+    request.post<IntakeTokenResult>("/me/intake-token/rotate"),
 };

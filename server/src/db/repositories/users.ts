@@ -39,6 +39,11 @@ export const usersRepo = {
     return db.query.users.findFirst({ where: eq(users.username, username) });
   },
 
+  // 采集脚本投递鉴权用：按长效令牌反查账号。见 Memory/DataGovernance.md。
+  findByIntakeToken(token: string): Promise<UserRow | undefined> {
+    return db.query.users.findFirst({ where: eq(users.intakeToken, token) });
+  },
+
   async create(
     data: Omit<NewUserRow, "id" | "createdAt" | "updatedAt">,
   ): Promise<UserRow> {
@@ -55,7 +60,13 @@ export const usersRepo = {
     data: Partial<
       Pick<
         UserRow,
-        "displayName" | "email" | "role" | "enabled" | "passwordHash" | "personId"
+        | "displayName"
+        | "email"
+        | "role"
+        | "enabled"
+        | "passwordHash"
+        | "personId"
+        | "intakeToken"
       >
     >,
   ): Promise<UserRow | undefined> {

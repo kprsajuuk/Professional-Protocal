@@ -38,3 +38,8 @@ export const updatePreferencesBodySchema = z.object({
 });
 
 export type UpdatePreferencesBody = z.infer<typeof updatePreferencesBodySchema>;
+
+// 采集令牌：供油猴脚本投递鉴权。见 Memory/DataGovernance.md。token 为空表示尚未生成。
+export const intakeTokenResponseSchema = z.object({
+  token: z.string().nullable(),
+});
